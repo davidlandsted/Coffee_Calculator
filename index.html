@@ -232,6 +232,110 @@
             display: block;
             margin-top: 5px;
         }
+
+        .brewing-guide {
+            background-color: var(--container-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .brewing-guide h2,
+        .brewing-tips h2 {
+            color: var(--accent-color);
+            font-weight: 300;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        .brewing-guide ol {
+            padding-left: 20px;
+        }
+
+        .brewing-guide li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .brewing-guide li::marker {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .brewing-tips {
+            background-color: #f0f4f8; /* Light blue background to differentiate */
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .brewing-tips h2 {
+            color: var(--accent-color);
+        }
+
+        .brewing-tips ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .brewing-tips li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .brewing-tips li::before {
+            content: "☕"; /* Coffee cup emoji as bullet point */
+            position: absolute;
+            left: 0;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+            
+            .container {
+                padding: 20px;
+                margin: 20px auto;
+            }
+            
+            h1 {
+                font-size: 1.5em;
+            }
+            
+            .presets, .strength-selector {
+                flex-direction: column;
+            }
+            
+            .presets button, .strength-selector button {
+                margin: 5px 0;
+            }
+            
+            .timer-section {
+                flex-wrap: wrap;
+            }
+            
+            .timer-section button {
+                margin: 5px;
+            }
+            
+            .brewing-guide h2,
+            .brewing-tips h2 {
+                font-size: 1.3em;
+            }
+            
+            .brewing-guide li {
+                font-size: 0.9em;
+            }
+            
+            .brewing-tips li {
+                font-size: 0.9em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -281,6 +385,7 @@
                 <li>Pour and enjoy your perfectly brewed coffee!</li>
             </ol>
         </div>
+        <div class="brewing-tips" id="brewingTips"></div>
     </div>
     <script>
         function updateRatio(value) {
@@ -306,18 +411,20 @@
         }
 
         function updateBrewingTips(coffeeAmount) {
-            let tips = "Brewing Tips:\n";
+            const tipsElement = document.getElementById('brewingTips');
+            let tips = "<h2>Brewing Tips</h2><ul>";
             if (coffeeAmount < 15) {
-                tips += "- For smaller amounts, ensure even saturation of grounds.\n";
-                tips += "- Adjust grind size slightly finer for better extraction.";
+                tips += "<li>For smaller amounts, ensure even saturation of grounds.</li>";
+                tips += "<li>Adjust grind size slightly finer for better extraction.</li>";
             } else if (coffeeAmount < 30) {
-                tips += "- Stir gently after adding water to ensure even extraction.\n";
-                tips += "- Consider a slightly longer brew time for fuller flavor.";
+                tips += "<li>Stir gently after adding water to ensure even extraction.</li>";
+                tips += "<li>Consider a slightly longer brew time for fuller flavor.</li>";
             } else {
-                tips += "- For larger batches, stir twice: once after adding water and once before plunging.\n";
-                tips += "- Allow a slightly longer cooling time before serving.";
+                tips += "<li>For larger batches, stir twice: once after adding water and once before plunging.</li>";
+                tips += "<li>Allow a slightly longer cooling time before serving.</li>";
             }
-            document.getElementById('details').innerText += "\n\n" + tips;
+            tips += "</ul>";
+            tipsElement.innerHTML = tips;
         }
 
         function setPreset(amount) {
