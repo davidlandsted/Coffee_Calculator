@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>French Press Coffee Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --accent-color: #3a5a78; /* Deeper, more professional blue */
+            --container-bg: rgba(255, 255, 255, 0.9);
+        }
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 40px 20px; /* Add padding to the body */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: url('https://images.unsplash.com/photo-1447933601403-0c6688de566e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+        .container {
+            background-color: var(--container-bg);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            margin: 40px auto; /* Add margin to the top and bottom */
+        }
+        h1 {
+            color: var(--accent-color);
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+        }
+        button {
+            padding: 10px;
+            width: 100%;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        button:hover {
+            background-color: #2c4660; /* Darker shade for hover */
+            transform: translateY(-2px);
+        }
+        .result, .details {
+            margin-top: 20px;
+            color: var(--text-color);
+        }
+        .french-press {
+            width: 100px;
+            height: 200px;
+            background-color: #f0f0f0;
+            border: 2px solid #333;
+            border-radius: 0 0 10px 10px;
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .coffee {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: #6f4e37;
+            transition: height 0.5s;
+        }
+        .plunger {
+            width: 90px;
+            height: 10px;
+            background-color: #333;
+            position: absolute;
+            top: 10px;
+            left: 5px;
+        }
+        .presets {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .presets button {
+            flex: 1;
+            margin: 0 5px;
+        }
+        .dark-mode-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .timer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.5em;
+            color: var(--text-color);
+        }
+        body.dark-mode {
+            background-color: #2c2c2c;
+        }
+        .dark-mode .container {
+            background-color: rgba(60, 60, 60, 0.9);
+            color: #f5e6d3;
+        }
+        .dark-mode h1, .dark-mode label, .dark-mode .result, .dark-mode .details, .dark-mode .timer {
+            color: #f5e6d3;
+        }
+        .strength-selector {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .strength-selector button {
+            flex: 1;
+            margin: 0 5px;
+            background-color: #f0f0f0;
+            color: #333;
+            border-radius: 20px;
+            padding: 8px 15px;
+        }
+        .strength-selector button.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        /* Remove dark mode related styles */
+        .dark-mode-toggle,
+        body.dark-mode,
+        .dark-mode .container,
+        .dark-mode h1, .dark-mode label, .dark-mode .result, .dark-mode .details, .dark-mode .timer {
+            display: none;
+        }
+        
+        /* Add style for timer input */
+        #timerInput {
+            width: 50px;
+            text-align: center;
+            margin-right: 5px;
+        }
+        .timer-unit {
+            margin-right: 10px;
+        }
+        .timer-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            background-color: #f0f4f8;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        .timer-section button {
+            width: auto;
+            padding: 5px 10px;
+            margin: 0 5px;
+        }
+        .timer {
+            font-size: 2em;
+            font-weight: 300;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .result span {
+            font-size: 1.5em;
+            font-weight: 700;
+            display: block;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>French Press Coffee Calculator</h1>
+        <div class="presets">
+            <button onclick="setPreset(350)">350 ml</button>
+            <button onclick="setPreset(500)">500 ml</button>
+            <button onclick="setPreset(1000)">1000 ml</button>
+        </div>
+        <div class="input-group">
+            <label for="waterAmount">Water Amount (ml)</label>
+            <input type="number" id="waterAmount" placeholder="Enter water amount in ml">
+        </div>
+        <div class="strength-selector">
+            <button onclick="setStrength('mild')">Mild</button>
+            <button onclick="setStrength('medium')" class="active">Medium</button>
+            <button onclick="setStrength('strong')">Strong</button>
+        </div>
+        <div class="input-group">
+            <label for="ratio">Coffee-to-Water Ratio: <span id="ratioValue">0.060</span></label>
+            <input type="range" id="ratio" min="0.050" max="0.080" step="0.001" value="0.060">
+        </div>
+        <button onclick="calculateCoffee()">Calculate</button>
+        <div class="french-press">
+            <div class="plunger"></div>
+            <div class="coffee" id="coffeeFill"></div>
+        </div>
+        <div class="result" id="result"></div>
+        <div class="details" id="details"></div>
+        <div class="timer-section">
+            <input type="number" id="timerInput" value="4" min="1" max="10">
+            <span class="timer-unit">minutes</span>
+            <button onclick="startTimer()">Start</button>
+            <button onclick="stopTimer()">Stop</button>
+            <button onclick="resetTimer()">Reset</button>
+        </div>
+        <div class="timer" id="timer"></div>
+        <div class="brewing-guide">
+            <h2>Brewing Guide</h2>
+            <ol>
+                <li>Grind your coffee beans to a coarse consistency.</li>
+                <li>Add the ground coffee to your French press.</li>
+                <li>Pour hot water (90°C to 96°C) over the grounds.</li>
+                <li>Stir gently and let steep for 4 minutes (or your preferred time).</li>
+                <li>Press the plunger down slowly.</li>
+                <li>Pour and enjoy your perfectly brewed coffee!</li>
+            </ol>
+        </div>
+    </div>
+    <script>
+        function updateRatio(value) {
+            document.getElementById('ratioValue').innerText = parseFloat(value).toFixed(3);
+            calculateCoffee();
+        }
+
+        function calculateCoffee() {
+            const waterAmount = document.getElementById('waterAmount').value;
+            const ratio = parseFloat(document.getElementById('ratio').value);
+
+            const coffeeAmount = (waterAmount * ratio).toFixed(2);
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = `You need <span>${coffeeAmount} grams</span> of coffee.`;
+            document.getElementById('details').innerText = `Calculation: ${waterAmount} ml water * ${ratio.toFixed(3)} ratio = ${coffeeAmount} grams of coffee.`;
+            
+            // Update French press visual
+            const fillPercentage = (waterAmount / 1000) * 100; // Assuming max capacity of 1000ml
+            document.getElementById('coffeeFill').style.height = `${Math.min(fillPercentage, 100)}%`;
+
+            // Update brewing tips
+            updateBrewingTips(coffeeAmount);
+        }
+
+        function updateBrewingTips(coffeeAmount) {
+            let tips = "Brewing Tips:\n";
+            if (coffeeAmount < 15) {
+                tips += "- For smaller amounts, ensure even saturation of grounds.\n";
+                tips += "- Adjust grind size slightly finer for better extraction.";
+            } else if (coffeeAmount < 30) {
+                tips += "- Stir gently after adding water to ensure even extraction.\n";
+                tips += "- Consider a slightly longer brew time for fuller flavor.";
+            } else {
+                tips += "- For larger batches, stir twice: once after adding water and once before plunging.\n";
+                tips += "- Allow a slightly longer cooling time before serving.";
+            }
+            document.getElementById('details').innerText += "\n\n" + tips;
+        }
+
+        function setPreset(amount) {
+            document.getElementById('waterAmount').value = amount;
+            calculateCoffee();
+        }
+
+        function setStrength(strength) {
+            const ratioInput = document.getElementById('ratio');
+            switch(strength) {
+                case 'mild':
+                    ratioInput.value = 0.055;
+                    break;
+                case 'medium':
+                    ratioInput.value = 0.065;
+                    break;
+                case 'strong':
+                    ratioInput.value = 0.075;
+                    break;
+            }
+            updateRatio(ratioInput.value);
+            document.querySelectorAll('.strength-selector button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        let timerInterval;
+        let remainingTime = 0;
+
+        function startTimer() {
+            if (remainingTime === 0) {
+                remainingTime = parseInt(document.getElementById('timerInput').value) * 60;
+            }
+            const timerDisplay = document.getElementById('timer');
+            timerInterval = setInterval(() => {
+                const minutes = Math.floor(remainingTime / 60);
+                let seconds = remainingTime % 60;
+                seconds = seconds < 10 ? '0' + seconds : seconds;
+                timerDisplay.textContent = `${minutes}:${seconds}`;
+                if (remainingTime === 0) {
+                    stopTimer();
+                    timerDisplay.textContent = "Time's up!";
+                } else {
+                    remainingTime--;
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function resetTimer() {
+            stopTimer();
+            remainingTime = 0;
+            document.getElementById('timer').textContent = '';
+        }
+
+        // Event listeners
+        document.getElementById('ratio').addEventListener('input', function() {
+            updateRatio(this.value);
+        });
+
+        document.getElementById('waterAmount').addEventListener('input', calculateCoffee);
+
+        // Initial calculation
+        calculateCoffee();
+    </script>
+</body>
+</html>
