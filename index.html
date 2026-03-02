@@ -4,592 +4,1029 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>French Press Coffee Calculator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <meta name="description" content="Calculate the perfect coffee-to-water ratio for a delicious French press brew.">
+    <meta property="og:title" content="☕ French Press Coffee Calculator">
+    <meta property="og:description" content="Get the exact measurements for a perfect cup every time.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#2C1205">
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
+        /* ── Reset ───────────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ── Design tokens ───────────────────────────────────────── */
         :root {
-            --bg-color: #f5f5f5;
-            --text-color: #333;
-            --accent-color: #3a5a78;
-            --accent-hover: #2c4660;
-            --container-bg: rgba(255, 255, 255, 0.92);
-            --tips-bg: #f0f4f8;
-            --timer-bg: #f0f4f8;
-            --input-bg: rgba(255, 255, 255, 0.9);
-            --border-color: #e0e0e0;
-            --subtext-color: #666;
+            --espresso:    #2C1205;
+            --coffee:      #6F4E37;
+            --caramel:     #C4813E;
+            --golden:      #E8A857;
+            --latte:       #D4A882;
+            --cream:       #FDF6EB;
+
+            --accent:      var(--caramel);
+            --accent-h:    #A8702F;
+            --text:        #2C1205;
+            --text-muted:  #8B6347;
+            --card-bg:     rgba(253, 246, 235, 0.97);
+            --surface:     rgba(245, 233, 215, 0.6);
+            --border:      rgba(196, 129, 62, 0.22);
+            --input-bg:    rgba(255, 255, 255, 0.8);
+            --shadow:      rgba(44, 18, 5, 0.18);
+
+            --r-sm:  10px;
+            --r-md:  16px;
+            --r-lg:  26px;
+            --r-pill: 100px;
         }
-        *, *::before, *::after {
-            box-sizing: border-box;
+        :root.dark {
+            --accent:      var(--golden);
+            --accent-h:    #c98e3c;
+            --text:        #F5E6CF;
+            --text-muted:  #B08B65;
+            --card-bg:     rgba(18, 8, 2, 0.97);
+            --surface:     rgba(42, 20, 8, 0.75);
+            --border:      rgba(232, 168, 87, 0.2);
+            --input-bg:    rgba(255, 255, 255, 0.07);
+            --shadow:      rgba(0, 0, 0, 0.5);
         }
+
+        /* ── Page ────────────────────────────────────────────────── */
+        html { scroll-behavior: smooth; }
         body {
-            font-family: 'Roboto', Arial, sans-serif;
-            margin: 0;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            font-family: 'Inter', system-ui, sans-serif;
             min-height: 100vh;
+            display: grid;
+            place-items: start center;
+            padding: 32px 16px 48px;
+            color: var(--text);
+        }
+        .bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
             background-image: url('https://images.unsplash.com/photo-1447933601403-0c6688de566e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
             background-size: cover;
             background-position: center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            color: var(--text-color);
-            transition: background-color 0.3s;
         }
-        body.dark-mode {
-            --bg-color: #1a1a2e;
-            --text-color: #f0e6d3;
-            --container-bg: rgba(30, 30, 50, 0.95);
-            --tips-bg: rgba(255,255,255,0.08);
-            --timer-bg: rgba(255,255,255,0.08);
-            --input-bg: rgba(255,255,255,0.1);
-            --border-color: #555;
-            --subtext-color: #bbb;
+        .bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(150deg,
+                rgba(28,10,2,0.78) 0%,
+                rgba(44,18,5,0.6) 50%,
+                rgba(15,6,1,0.85) 100%);
         }
-        .container {
-            background-color: var(--container-bg);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            max-width: 520px;
-            width: 100%;
-            margin: 0 auto;
+
+        /* ── Card ────────────────────────────────────────────────── */
+        .card {
             position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 520px;
+            background: var(--card-bg);
+            backdrop-filter: blur(18px) saturate(160%);
+            -webkit-backdrop-filter: blur(18px) saturate(160%);
+            border-radius: var(--r-lg);
+            border: 1px solid var(--border);
+            box-shadow:
+                0 2px 0 1px rgba(255,255,255,0.06) inset,
+                0 28px 72px var(--shadow);
+            overflow: hidden;
+            animation: fadeUp 0.45s ease both;
         }
-        .header {
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Card header ─────────────────────────────────────────── */
+        .card-header {
+            padding: 28px 32px 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .brand h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.7rem;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.22;
+            letter-spacing: -0.01em;
+        }
+        .brand p {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 5px;
+            font-style: italic;
+            font-family: 'Playfair Display', serif;
+        }
+        .theme-btn {
+            flex-shrink: 0;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 1.15rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 24px;
-            position: relative;
+            transition: background 0.2s, transform 0.25s, border-color 0.2s;
+            width: auto; /* reset global button width */
+            padding: 0;
+            width: 42px;
         }
-        h1 {
-            color: var(--accent-color);
-            text-align: center;
-            margin: 0;
-            font-weight: 300;
-            font-size: 1.8em;
-        }
-        .dark-mode-toggle {
-            position: absolute;
-            right: 0;
-            background: none;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 6px 12px;
-            cursor: pointer;
-            font-size: 1.1em;
-            color: var(--text-color);
-            width: auto;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        .dark-mode-toggle:hover {
-            background-color: var(--accent-color);
+        .theme-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
             color: white;
-            transform: none;
+            transform: rotate(22deg) scale(1.05);
         }
-        .input-group {
-            margin-bottom: 16px;
+
+        /* ── Layout utilities ────────────────────────────────────── */
+        .px { padding-left: 32px; padding-right: 32px; }
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 22px 0;
         }
-        .input-group label {
-            display: block;
-            margin-bottom: 6px;
-            color: var(--text-color);
+        .section { padding: 0 32px; }
+        .section + .section { margin-top: 0; }
+        .eyebrow {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--accent);
+            margin-bottom: 14px;
+        }
+
+        /* ── Preset chips ────────────────────────────────────────── */
+        .chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .chip {
+            padding: 7px 16px;
+            border-radius: var(--r-pill);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-family: inherit;
             font-weight: 500;
+            transition: all 0.18s;
+            /* reset global button styles */
+            width: auto;
+            text-transform: none;
+            letter-spacing: 0;
         }
-        input[type="number"], select {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background-color: var(--input-bg);
-            color: var(--text-color);
-            font-size: 1em;
-            transition: border-color 0.3s, box-shadow 0.3s;
+        .chip:hover, .chip.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(196,129,62,0.3);
         }
-        input[type="number"]:focus, select:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(58, 90, 120, 0.15);
+
+        /* ── Field ───────────────────────────────────────────────── */
+        .field { margin-bottom: 18px; }
+        .field > label {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 9px;
         }
+        .field > label span.accent { color: var(--accent); font-size: 0.88em; }
+
+        /* ── Input wrapper (number + unit toggle) ────────────────── */
+        .input-wrap {
+            display: flex;
+            align-items: stretch;
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-sm);
+            background: var(--input-bg);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+        }
+        .input-wrap:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(196,129,62,0.14);
+        }
+        .input-wrap input[type="number"] {
+            flex: 1;
+            min-width: 0;
+            padding: 13px 14px;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            font-size: 1.1rem;
+            font-weight: 500;
+            font-family: inherit;
+            -moz-appearance: textfield;
+        }
+        .input-wrap input[type="number"]::-webkit-outer-spin-button,
+        .input-wrap input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+        .input-wrap input[type="number"]:focus { outline: none; }
+
+        .unit-toggle {
+            display: flex;
+            align-items: center;
+            border-left: 1.5px solid var(--border);
+            background: var(--surface);
+        }
+        .unit-btn {
+            padding: 0 11px;
+            height: 100%;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 600;
+            font-family: inherit;
+            transition: color 0.15s;
+            width: auto;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .unit-btn.active { color: var(--accent); }
+        .unit-btn:hover { color: var(--accent); transform: none; }
+        .unit-sep { color: var(--border); font-size: 0.9rem; user-select: none; }
+
+        /* ── Range slider ────────────────────────────────────────── */
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
             width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: var(--border-color);
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border);
             outline: none;
             cursor: pointer;
             padding: 0;
             border: none;
+            margin-top: 6px;
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
-            background: var(--accent-color);
+            background: var(--accent);
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: 3px solid var(--card-bg);
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: transform 0.15s;
         }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
         input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
-            background: var(--accent-color);
+            background: var(--accent);
             cursor: pointer;
-            border: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: 3px solid var(--card-bg);
+            box-shadow: 0 2px 8px var(--shadow);
         }
-        .presets {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        .presets button {
+
+        /* ── Strength pills ──────────────────────────────────────── */
+        .strength-row { display: flex; gap: 8px; }
+        .pill {
             flex: 1;
-        }
-        .strength-selector {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        .strength-selector button {
-            flex: 1;
-            background-color: var(--tips-bg);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 8px 12px;
-            font-size: 0.9em;
-        }
-        .strength-selector button.active {
-            background-color: var(--accent-color);
-            color: white;
-            border-color: var(--accent-color);
-        }
-        button {
-            padding: 10px 16px;
-            width: 100%;
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
+            padding: 9px 6px;
+            border-radius: var(--r-pill);
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-muted);
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.15s;
-            font-weight: 500;
-            font-size: 0.95em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-size: 0.8rem;
+            font-weight: 600;
             font-family: inherit;
-        }
-        button:hover {
-            background-color: var(--accent-hover);
-            transform: translateY(-1px);
-        }
-        button:active {
-            transform: translateY(0);
-        }
-        .french-press {
-            width: 80px;
-            height: 160px;
-            background-color: var(--tips-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 0 0 10px 10px;
-            margin: 20px auto;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        .coffee {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            background: linear-gradient(to top, #4a2c17, #6f4e37);
-            transition: height 0.6s ease;
-        }
-        .plunger {
-            width: 76px;
-            height: 8px;
-            background-color: var(--accent-color);
-            position: absolute;
-            top: 8px;
-            left: 2px;
-            border-radius: 2px;
-            z-index: 1;
-        }
-        .result {
-            margin-top: 20px;
-            padding: 18px;
-            background-color: var(--accent-color);
-            color: white;
-            border-radius: 12px;
             text-align: center;
-            font-size: 1.05em;
-            box-shadow: 0 4px 12px rgba(58, 90, 120, 0.35);
-        }
-        .result.empty {
-            background-color: var(--tips-bg);
-            color: var(--subtext-color);
-            box-shadow: none;
-            font-size: 0.95em;
-        }
-        .result span.big {
-            font-size: 2em;
-            font-weight: 700;
-            display: block;
-            margin: 6px 0 2px;
-        }
-        .result .cups {
-            font-size: 0.9em;
-            opacity: 0.85;
-            margin-top: 4px;
-        }
-        .details {
-            margin-top: 10px;
-            color: var(--subtext-color);
-            font-size: 0.85em;
-            text-align: center;
-        }
-        .timer-section {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 20px;
-            background-color: var(--timer-bg);
-            border-radius: 12px;
-            padding: 16px;
-        }
-        .timer-section label {
-            font-size: 0.9em;
-            color: var(--text-color);
-            font-weight: 500;
-            width: 100%;
-            text-align: center;
-            margin-bottom: 4px;
-        }
-        .timer-section input[type="number"] {
-            width: 64px;
-            text-align: center;
-            padding: 8px;
-        }
-        .timer-section span.timer-unit {
-            color: var(--text-color);
-            font-size: 0.9em;
-        }
-        .timer-section button {
+            transition: all 0.18s;
             width: auto;
-            padding: 8px 16px;
-            font-size: 0.85em;
             text-transform: none;
             letter-spacing: 0;
         }
-        .timer-section button.stop-btn {
-            background-color: #c0392b;
+        .pill.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            box-shadow: 0 4px 14px rgba(196,129,62,0.35);
         }
-        .timer-section button.stop-btn:hover {
-            background-color: #a93226;
+        .pill:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+        /* ── French press SVG ────────────────────────────────────── */
+        .press-wrap {
+            display: flex;
+            justify-content: center;
+            padding: 4px 0 20px;
         }
-        .timer-section button.reset-btn {
-            background-color: #7f8c8d;
+        .press-svg {
+            width: 86px;
+            height: auto;
+            filter: drop-shadow(0 10px 22px var(--shadow));
         }
-        .timer-section button.reset-btn:hover {
-            background-color: #6c7a7b;
-        }
-        .timer-display {
+
+        /* ── Result panel ────────────────────────────────────────── */
+        .result-panel {
+            border-radius: var(--r-md);
+            padding: 20px 22px;
             text-align: center;
-            margin-top: 10px;
-            font-size: 2.2em;
-            font-weight: 300;
-            color: var(--accent-color);
-            min-height: 1.2em;
-            letter-spacing: 2px;
+            transition: background 0.35s, box-shadow 0.35s;
         }
-        .timer-display.done {
-            color: #27ae60;
-            font-size: 1.3em;
+        .result-panel.empty {
+            background: var(--surface);
+            border: 1.5px dashed var(--border);
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            padding: 18px;
         }
-        .brewing-guide {
-            background-color: var(--container-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 24px;
+        .result-panel.filled {
+            background: linear-gradient(135deg, var(--espresso) 0%, #5C3317 100%);
+            color: white;
+            box-shadow: 0 10px 28px rgba(44,18,5,0.4);
         }
-        .brewing-guide h2,
-        .brewing-tips h2 {
-            color: var(--accent-color);
-            font-weight: 400;
-            margin: 0 0 14px;
-            text-align: center;
-            font-size: 1.2em;
+        .result-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            opacity: 0.7;
+            font-weight: 600;
         }
-        .brewing-guide ol {
-            padding-left: 20px;
-            margin: 0;
+        .result-grams {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.4rem;
+            font-weight: 600;
+            line-height: 1;
+            margin: 6px 0 2px;
+            display: block;
+            letter-spacing: -0.02em;
         }
-        .brewing-guide li {
-            margin-bottom: 8px;
-            line-height: 1.6;
-            color: var(--text-color);
-        }
-        .brewing-guide li::marker {
-            color: var(--accent-color);
-            font-weight: bold;
-        }
-        .brewing-tips {
-            background-color: var(--tips-bg);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 16px;
-        }
-        .brewing-tips ul {
-            list-style-type: none;
-            padding-left: 0;
-            margin: 0;
-        }
-        .brewing-tips li {
-            margin-bottom: 8px;
-            padding-left: 24px;
-            position: relative;
-            color: var(--text-color);
+        .result-meta {
+            font-size: 0.78rem;
+            opacity: 0.65;
+            margin-top: 4px;
             line-height: 1.5;
         }
-        .brewing-tips li::before {
-            content: "☕";
+        .result-actions { display: flex; justify-content: center; gap: 8px; margin-top: 14px; }
+        .ghost-btn {
+            padding: 6px 16px;
+            border-radius: var(--r-pill);
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.12);
+            color: white;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-family: inherit;
+            font-weight: 500;
+            transition: background 0.18s;
+            width: auto;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .ghost-btn:hover { background: rgba(255,255,255,0.22); transform: none; }
+
+        /* ── Timer ───────────────────────────────────────────────── */
+        .timer-card {
+            background: var(--surface);
+            border-radius: var(--r-md);
+            border: 1px solid var(--border);
+            padding: 22px 20px;
+        }
+        .timer-layout {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        /* Ring */
+        .ring-wrap {
+            position: relative;
+            flex-shrink: 0;
+            width: 112px;
+            height: 112px;
+        }
+        .ring-svg {
+            width: 112px;
+            height: 112px;
+            transform: rotate(-90deg);
+        }
+        .ring-track {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 6;
+        }
+        .ring-progress {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-dasharray: 282.74;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 0.95s linear, stroke 0.3s;
+        }
+        .ring-progress.done { stroke: #4caf80; }
+        .ring-center {
             position: absolute;
-            left: 0;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
-        .section-divider {
-            height: 1px;
-            background-color: var(--border-color);
-            margin: 20px 0;
+        .ring-time {
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 1px;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
         }
-        @media (max-width: 600px) {
-            body { padding: 20px 12px; }
-            .container { padding: 24px 20px; }
-            h1 { font-size: 1.4em; }
-            .presets, .strength-selector { flex-direction: column; }
-            .timer-section button { flex: 1; }
+        .ring-sub {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 4px;
+        }
+        /* Timer controls */
+        .timer-controls { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .timer-min-row { display: flex; align-items: center; gap: 8px; }
+        .timer-min-row input {
+            width: 58px;
+            padding: 8px 10px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-sm);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            text-align: center;
+            -moz-appearance: textfield;
+            transition: border-color 0.2s;
+        }
+        .timer-min-row input::-webkit-outer-spin-button,
+        .timer-min-row input::-webkit-inner-spin-button { -webkit-appearance: none; }
+        .timer-min-row input:focus { outline: none; border-color: var(--accent); }
+        .timer-min-row span { font-size: 0.82rem; color: var(--text-muted); }
+        .timer-btns { display: flex; gap: 8px; }
+        .t-btn {
+            flex: 1;
+            padding: 9px 6px;
+            border-radius: var(--r-sm);
+            border: 1.5px solid var(--border);
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.18s;
+            width: auto;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .t-btn.start { background: var(--accent); border-color: var(--accent); color: white; }
+        .t-btn.start:hover { background: var(--accent-h); border-color: var(--accent-h); }
+        .t-btn.pause { background: transparent; color: var(--text); }
+        .t-btn.pause:hover { border-color: var(--accent); color: var(--accent); }
+        .t-btn.reset { background: transparent; color: var(--text-muted); }
+        .t-btn.reset:hover { color: var(--text); }
+        .timer-done { display: none; font-size: 0.82rem; color: #4caf80; font-weight: 600; text-align: center; }
+
+        /* ── Brewing guide (accordion) ───────────────────────────── */
+        .guide details {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r-md);
+            overflow: hidden;
+        }
+        .guide summary {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            padding: 16px 20px;
+            user-select: none;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .guide summary::-webkit-details-marker { display: none; }
+        .guide summary::after { content: '▾'; color: var(--accent); font-size: 1rem; transition: transform 0.25s; }
+        .guide details[open] summary::after { transform: rotate(-180deg); }
+        .guide-body {
+            border-top: 1px solid var(--border);
+            padding: 16px 20px 20px;
+        }
+        .guide-body ol { padding-left: 20px; }
+        .guide-body li {
+            color: var(--text);
+            line-height: 1.7;
+            margin-bottom: 7px;
+            font-size: 0.88rem;
+        }
+        .guide-body li::marker { color: var(--accent); font-weight: 700; }
+
+        /* ── Tips ────────────────────────────────────────────────── */
+        .tips {
+            display: none;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r-md);
+            padding: 16px 20px;
+        }
+        .tips.show { display: block; }
+        .tips h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        .tips ul { list-style: none; padding: 0; }
+        .tips li {
+            font-size: 0.85rem;
+            color: var(--text);
+            line-height: 1.6;
+            padding-left: 20px;
+            position: relative;
+            margin-bottom: 6px;
+        }
+        .tips li::before { content: '→'; position: absolute; left: 0; color: var(--accent); }
+
+        /* ── Share footer ────────────────────────────────────────── */
+        .share-bar { display: flex; justify-content: center; }
+        .share-btn {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 24px;
+            border-radius: var(--r-pill);
+            border: 1.5px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.2s;
+            width: auto;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .share-btn:hover { border-color: var(--accent); color: var(--accent); transform: none; }
+
+        /* ── Toast ───────────────────────────────────────────────── */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--espresso);
+            color: var(--cream);
+            padding: 12px 24px;
+            border-radius: var(--r-pill);
+            font-size: 0.82rem;
+            font-weight: 500;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+            z-index: 200;
+            transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* ── Responsive ──────────────────────────────────────────── */
+        @media (max-width: 540px) {
+            body { padding: 16px 12px 36px; }
+            .card-header, .section, .px { padding-left: 20px; padding-right: 20px; }
+            .brand h1 { font-size: 1.45rem; }
+            .result-grams { font-size: 2.7rem; }
+            .timer-layout { flex-direction: column; }
+            .timer-btns { justify-content: center; }
+            .ring-wrap { width: 120px; height: 120px; }
+            .ring-svg { width: 120px; height: 120px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>☕ French Press Calculator</h1>
-            <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+    <div class="bg" aria-hidden="true"></div>
+
+    <div class="card">
+
+        <!-- ── Header ── -->
+        <div class="card-header">
+            <div class="brand">
+                <h1>French Press<br>Calculator</h1>
+                <p>Perfect coffee, every brew</p>
+            </div>
+            <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" aria-label="Toggle dark mode">🌙</button>
         </div>
 
-        <div class="presets">
-            <button onclick="setPreset(350)">350 ml</button>
-            <button onclick="setPreset(500)">500 ml</button>
-            <button onclick="setPreset(1000)">1000 ml</button>
-        </div>
+        <div class="px"><div class="divider"></div></div>
 
-        <div class="input-group">
-            <label for="waterAmount">Water Amount (ml)</label>
-            <input type="number" id="waterAmount" placeholder="e.g. 500" min="50" max="2000">
-        </div>
+        <!-- ── Calculator ── -->
+        <div class="section">
+            <div class="eyebrow">Quick Presets</div>
+            <div class="chips">
+                <button class="chip" data-preset="350"  onclick="setPreset(350)">350 ml</button>
+                <button class="chip" data-preset="500"  onclick="setPreset(500)">500 ml</button>
+                <button class="chip" data-preset="750"  onclick="setPreset(750)">750 ml</button>
+                <button class="chip" data-preset="1000" onclick="setPreset(1000)">1 L</button>
+            </div>
 
-        <div class="input-group">
-            <label>Brew Strength</label>
-            <div class="strength-selector">
-                <button onclick="setStrength('mild', event)">Mild</button>
-                <button onclick="setStrength('medium', event)" class="active">Medium</button>
-                <button onclick="setStrength('strong', event)">Strong</button>
+            <div class="field">
+                <label for="waterAmount"><span>Water Amount</span></label>
+                <div class="input-wrap">
+                    <input type="number" id="waterAmount" placeholder="e.g. 500" min="50" max="5000" autocomplete="off">
+                    <div class="unit-toggle">
+                        <button class="unit-btn active" id="btnMl" onclick="setUnit('ml')">ml</button>
+                        <span class="unit-sep">/</span>
+                        <button class="unit-btn" id="btnOz" onclick="setUnit('oz')">oz</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label><span>Brew Strength</span></label>
+                <div class="strength-row">
+                    <button class="pill" onclick="setStrength('mild', event)">🌿 Mild</button>
+                    <button class="pill active" onclick="setStrength('medium', event)">☕ Medium</button>
+                    <button class="pill" onclick="setStrength('strong', event)">🔥 Strong</button>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="ratio">
+                    <span>Coffee-to-Water Ratio</span>
+                    <span class="accent" id="ratioValue">1 : 15.4</span>
+                </label>
+                <input type="range" id="ratio" min="0.050" max="0.080" step="0.001" value="0.065">
             </div>
         </div>
 
-        <div class="input-group">
-            <label for="ratio">Coffee-to-Water Ratio: <span id="ratioValue">1 : 15.4</span></label>
-            <input type="range" id="ratio" min="0.050" max="0.080" step="0.001" value="0.065">
+        <!-- ── French press visual ── -->
+        <div class="press-wrap">
+            <svg class="press-svg" viewBox="0 0 100 192" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                    <linearGradient id="brewGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%"   stop-color="#5c3317" stop-opacity="0.9"/>
+                        <stop offset="100%" stop-color="#2c1205"/>
+                    </linearGradient>
+                    <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%"   stop-color="#c9a67c" stop-opacity="0.28"/>
+                        <stop offset="35%"  stop-color="#fff"    stop-opacity="0.1"/>
+                        <stop offset="100%" stop-color="#c9a67c" stop-opacity="0.22"/>
+                    </linearGradient>
+                    <clipPath id="beakerClip">
+                        <rect x="22" y="42" width="56" height="140" rx="3"/>
+                    </clipPath>
+                </defs>
+                <!-- Handle -->
+                <path d="M 22 72 C 4 72 4 140 22 140" fill="none" stroke="#6f4e37" stroke-width="5" stroke-linecap="round"/>
+                <!-- Beaker body -->
+                <rect x="22" y="42" width="56" height="140" rx="3" fill="url(#glassGrad)" stroke="#b8a080" stroke-width="1.5"/>
+                <!-- Coffee fill (scaleY from bottom) -->
+                <rect id="pressFill" x="23" y="44" width="54" height="137"
+                      fill="url(#brewGrad)"
+                      clip-path="url(#beakerClip)"
+                      style="transform-box:fill-box; transform-origin:bottom center; transform:scaleY(0); transition:transform 0.55s ease;"/>
+                <!-- Plunger disk -->
+                <rect x="24" y="52" width="52" height="5" rx="2" fill="#3d1f0d" opacity="0.9"/>
+                <!-- Plunger rod -->
+                <rect x="46" y="4" width="8" height="50" rx="4" fill="#5c3317"/>
+                <!-- Lid -->
+                <rect x="16" y="36" width="68" height="9" rx="4" fill="#3d1f0d"/>
+                <!-- Knob -->
+                <rect x="42" y="0" width="16" height="9" rx="4" fill="#3d1f0d"/>
+                <!-- Shine -->
+                <rect x="25" y="44" width="5" height="136" rx="2" fill="rgba(255,255,255,0.14)"/>
+            </svg>
         </div>
 
-        <button onclick="calculateCoffee()">Calculate</button>
-
-        <div class="french-press" title="Visual fill level">
-            <div class="plunger"></div>
-            <div class="coffee" id="coffeeFill" style="height:0%"></div>
+        <!-- ── Result ── -->
+        <div class="section">
+            <div class="result-panel empty" id="result">
+                Enter a water amount above to calculate
+            </div>
+            <div class="px" style="padding:0"><div class="divider"></div></div>
         </div>
 
-        <div class="result empty" id="result">Enter water amount above to calculate</div>
-        <div class="details" id="details"></div>
-
-        <div class="section-divider"></div>
-
-        <div class="timer-section">
-            <label>Brew Timer</label>
-            <input type="number" id="timerInput" value="4" min="1" max="30">
-            <span class="timer-unit">minutes</span>
-            <button onclick="startTimer()">▶ Start</button>
-            <button class="stop-btn" onclick="stopTimer()">⏸ Pause</button>
-            <button class="reset-btn" onclick="resetTimer()">↺ Reset</button>
+        <!-- ── Timer ── -->
+        <div class="section">
+            <div class="eyebrow">Brew Timer</div>
+            <div class="timer-card">
+                <div class="timer-layout">
+                    <div class="ring-wrap">
+                        <svg class="ring-svg" viewBox="0 0 112 112" aria-hidden="true">
+                            <circle class="ring-track"    cx="56" cy="56" r="45"/>
+                            <circle class="ring-progress" cx="56" cy="56" r="45" id="timerArc"/>
+                        </svg>
+                        <div class="ring-center" aria-live="polite">
+                            <div class="ring-time" id="timerDisplay">4:00</div>
+                            <div class="ring-sub"  id="timerSub">ready</div>
+                        </div>
+                    </div>
+                    <div class="timer-controls">
+                        <div class="timer-min-row">
+                            <input type="number" id="timerInput" value="4" min="1" max="60" aria-label="Timer minutes">
+                            <span>minutes</span>
+                        </div>
+                        <div class="timer-btns">
+                            <button class="t-btn start" onclick="startTimer()">▶ Start</button>
+                            <button class="t-btn pause" onclick="stopTimer()">⏸</button>
+                            <button class="t-btn reset" onclick="resetTimer()">↺</button>
+                        </div>
+                        <div class="timer-done" id="timerDone">☕ Time's up! Pour and enjoy.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="divider"></div>
         </div>
-        <div class="timer-display" id="timerDisplay"></div>
 
-        <div class="section-divider"></div>
-
-        <div class="brewing-guide">
-            <h2>Brewing Guide</h2>
-            <ol>
-                <li>Grind coffee to a <strong>coarse</strong> consistency (like sea salt).</li>
-                <li>Add the ground coffee to your French press.</li>
-                <li>Pour hot water (90–96 °C / 194–205 °F) over the grounds.</li>
-                <li>Stir gently and fit the lid on (plunger up).</li>
-                <li>Steep for <strong>4 minutes</strong> — use the timer above!</li>
-                <li>Press the plunger down slowly and steadily.</li>
-                <li>Pour immediately and enjoy.</li>
-            </ol>
+        <!-- ── Brewing guide ── -->
+        <div class="section guide">
+            <details>
+                <summary>Brewing Guide</summary>
+                <div class="guide-body">
+                    <ol>
+                        <li>Grind coffee to a <strong>coarse</strong> consistency — like coarse sea salt.</li>
+                        <li>Add the ground coffee to your French press.</li>
+                        <li>Pour hot water (90–96 °C / 194–205 °F) over the grounds.</li>
+                        <li>Stir gently, then place the lid on with the plunger pulled up.</li>
+                        <li>Steep for <strong>4 minutes</strong> — use the timer above!</li>
+                        <li>Press the plunger down slowly and steadily.</li>
+                        <li>Pour immediately to prevent over-extraction.</li>
+                    </ol>
+                </div>
+            </details>
+            <div class="divider"></div>
         </div>
 
-        <div class="brewing-tips" id="brewingTips"></div>
-    </div>
+        <!-- ── Tips + share ── -->
+        <div class="section" style="padding-bottom: 32px; display: flex; flex-direction: column; gap: 20px;">
+            <div class="tips" id="brewingTips"></div>
+            <div class="share-bar">
+                <button class="share-btn" onclick="shareApp()">
+                    <span>🔗</span> Share this calculator
+                </button>
+            </div>
+        </div>
+
+    </div><!-- /card -->
+
+    <div class="toast" id="toast"></div>
 
     <script>
-        // ── Dark mode ──────────────────────────────────────────
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (prefersDark) document.body.classList.add('dark-mode');
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            const btn = document.querySelector('.dark-mode-toggle');
-            btn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        /* ── Theme ─────────────────────────────────────────────── */
+        const root = document.documentElement;
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            root.classList.add('dark');
+            document.getElementById('themeBtn').textContent = '☀️';
+        }
+        function toggleTheme() {
+            const dark = root.classList.toggle('dark');
+            document.getElementById('themeBtn').textContent = dark ? '☀️' : '🌙';
+            updateRangeFill(document.getElementById('ratio')); // refresh gradient
         }
 
-        // ── Ratio display ──────────────────────────────────────
-        function ratioLabel(value) {
-            const v = parseFloat(value);
-            return `1 : ${(1 / v).toFixed(1)}`;
+        /* ── Units ─────────────────────────────────────────────── */
+        let unit = 'ml';
+        function setUnit(u) {
+            const el = document.getElementById('waterAmount');
+            const v  = parseFloat(el.value);
+            if (!isNaN(v)) {
+                el.value = u === 'oz' && unit === 'ml'  ? (v / 29.5735).toFixed(1)
+                         : u === 'ml' && unit === 'oz'  ? Math.round(v * 29.5735)
+                         : el.value;
+            }
+            unit = u;
+            document.getElementById('btnMl').classList.toggle('active', u === 'ml');
+            document.getElementById('btnOz').classList.toggle('active', u === 'oz');
+            el.placeholder = u === 'ml' ? 'e.g. 500' : 'e.g. 17';
+            calculateCoffee();
+        }
+        function waterMl() {
+            const v = parseFloat(document.getElementById('waterAmount').value);
+            if (isNaN(v) || v <= 0) return null;
+            return unit === 'oz' ? v * 29.5735 : v;
         }
 
-        function updateRatio(value) {
-            document.getElementById('ratioValue').textContent = ratioLabel(value);
+        /* ── Range slider ──────────────────────────────────────── */
+        function ratioLabel(v) { return `1 : ${(1 / parseFloat(v)).toFixed(1)}`; }
+        function updateRangeFill(inp) {
+            const pct = ((parseFloat(inp.value) - parseFloat(inp.min)) /
+                         (parseFloat(inp.max)  - parseFloat(inp.min))) * 100;
+            inp.style.background =
+                `linear-gradient(to right, var(--accent) ${pct}%, var(--border) ${pct}%)`;
+        }
+        function updateRatio(v) {
+            document.getElementById('ratioValue').textContent = ratioLabel(v);
+            updateRangeFill(document.getElementById('ratio'));
             calculateCoffee();
         }
 
-        // ── Calculate ──────────────────────────────────────────
-        function calculateCoffee() {
-            const waterInput = document.getElementById('waterAmount');
-            const water = parseFloat(waterInput.value);
-            const ratio = parseFloat(document.getElementById('ratio').value);
-            const resultEl = document.getElementById('result');
-            const detailsEl = document.getElementById('details');
+        /* ── Presets ───────────────────────────────────────────── */
+        function setPreset(ml) {
+            const el = document.getElementById('waterAmount');
+            el.value = unit === 'oz' ? (ml / 29.5735).toFixed(1) : ml;
+            document.querySelectorAll('.chip').forEach(c =>
+                c.classList.toggle('active', parseInt(c.dataset.preset) === ml));
+            calculateCoffee();
+        }
 
-            if (!water || water <= 0) {
-                resultEl.className = 'result empty';
-                resultEl.innerHTML = 'Enter water amount above to calculate';
-                detailsEl.textContent = '';
-                document.getElementById('coffeeFill').style.height = '0%';
-                document.getElementById('brewingTips').innerHTML = '';
+        /* ── Strength ──────────────────────────────────────────── */
+        function setStrength(s, evt) {
+            const map = { mild: 0.055, medium: 0.065, strong: 0.075 };
+            const slider = document.getElementById('ratio');
+            slider.value = map[s] ?? 0.065;
+            updateRatio(slider.value);
+            document.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
+            if (evt?.target) evt.target.classList.add('active');
+        }
+
+        /* ── Calculate ─────────────────────────────────────────── */
+        function calculateCoffee() {
+            const ml    = waterMl();
+            const ratio = parseFloat(document.getElementById('ratio').value);
+            const panel = document.getElementById('result');
+
+            if (ml === null) {
+                panel.className = 'result-panel empty';
+                panel.innerHTML = 'Enter a water amount above to calculate';
+                document.getElementById('pressFill').style.transform = 'scaleY(0)';
+                document.getElementById('brewingTips').className = 'tips';
                 return;
             }
 
-            const coffee = water * ratio;
-            const cups = (water / 240).toFixed(1);
+            const g    = ml * ratio;
+            const cups = ml / 240;
+            const displayW = unit === 'oz'
+                ? `${(ml / 29.5735).toFixed(1)} oz`
+                : `${Math.round(ml)} ml`;
 
-            resultEl.className = 'result';
-            resultEl.innerHTML =
-                `You need <span class="big">${coffee.toFixed(1)} g</span> of coffee` +
-                `<div class="cups">for ~${cups} cup${parseFloat(cups) !== 1 ? 's' : ''} · ${water} ml water · ratio ${ratioLabel(ratio)}</div>`;
+            panel.className = 'result-panel filled';
+            panel.innerHTML = `
+                <div class="result-label">Coffee needed</div>
+                <span class="result-grams">${g.toFixed(1)} g</span>
+                <div class="result-meta">
+                    ${displayW} water &nbsp;·&nbsp;
+                    ~${cups.toFixed(1)} cup${cups.toFixed(1) !== '1.0' ? 's' : ''} &nbsp;·&nbsp;
+                    ratio ${ratioLabel(ratio)}
+                </div>
+                <div class="result-actions">
+                    <button class="ghost-btn" onclick="copyResult(${g.toFixed(1)}, ${Math.round(ml)})">
+                        📋 Copy recipe
+                    </button>
+                </div>`;
 
-            detailsEl.textContent = `${water} ml × ${ratio.toFixed(3)} = ${coffee.toFixed(2)} g`;
+            // Fill animation
+            document.getElementById('pressFill').style.transform =
+                `scaleY(${Math.min(ml / 1000, 1)})`;
 
-            // Visual fill (max 1000 ml = 100%)
-            document.getElementById('coffeeFill').style.height = `${Math.min((water / 1000) * 100, 100)}%`;
-
-            updateBrewingTips(coffee);
+            updateTips(g);
         }
 
-        function updateBrewingTips(coffeeGrams) {
+        function copyResult(g, ml) {
+            navigator.clipboard.writeText(`French Press: ${g}g coffee for ${ml}ml water`)
+                .then(() => showToast('Recipe copied to clipboard!'));
+        }
+
+        /* ── Tips ──────────────────────────────────────────────── */
+        function updateTips(g) {
             const el = document.getElementById('brewingTips');
-            let tips = '<h2>Tips for Your Brew</h2><ul>';
-            if (coffeeGrams < 15) {
-                tips += '<li>For small batches, pour in a slow, even spiral to saturate all grounds.</li>';
-                tips += '<li>Try a slightly finer grind to boost extraction.</li>';
-            } else if (coffeeGrams < 30) {
-                tips += '<li>Stir once after adding water to ensure even extraction.</li>';
-                tips += '<li>A 30-second bloom before adding the rest of the water deepens flavour.</li>';
-            } else {
-                tips += '<li>For large batches, stir twice: right after pouring, then again at the 2-minute mark.</li>';
-                tips += '<li>Let the coffee cool for 30 seconds after plunging before pouring.</li>';
-            }
-            tips += '<li>Use freshly roasted beans and grind just before brewing for the best results.</li>';
-            tips += '</ul>';
-            el.innerHTML = tips;
+            const items = g < 15
+                ? ['Pour in a slow spiral to saturate all grounds evenly.',
+                   'Try a slightly finer grind to improve extraction in small batches.']
+                : g < 40
+                ? ['Stir once after adding water for even extraction.',
+                   'A 30-second bloom before adding remaining water deepens flavour.']
+                : ['Stir twice: once after pouring, again at the 2-minute mark.',
+                   'Allow 30 s of cooling after pressing before you pour.'];
+            items.push('Freshly roasted beans, ground just before brewing, make the biggest difference.');
+            el.className = 'tips show';
+            el.innerHTML = `<h3>Tips for Your Brew</h3><ul>${
+                items.map(t => `<li>${t}</li>`).join('')
+            }</ul>`;
         }
 
-        // ── Presets ────────────────────────────────────────────
-        function setPreset(amount) {
-            document.getElementById('waterAmount').value = amount;
-            calculateCoffee();
-        }
-
-        // ── Strength ───────────────────────────────────────────
-        function setStrength(strength, evt) {
-            const ratioInput = document.getElementById('ratio');
-            const map = { mild: 0.055, medium: 0.065, strong: 0.075 };
-            ratioInput.value = map[strength] ?? 0.065;
-            updateRatio(ratioInput.value);
-            document.querySelectorAll('.strength-selector button').forEach(btn => btn.classList.remove('active'));
-            if (evt && evt.target) evt.target.classList.add('active');
-        }
-
-        // ── Timer ──────────────────────────────────────────────
+        /* ── Timer ─────────────────────────────────────────────── */
+        const CIRC = 2 * Math.PI * 45; // 282.74 (r=45)
         let timerInterval = null;
-        let remainingTime = 0;
+        let remaining = 0;
+        let total     = 0;
+
+        function fmtTime(s) {
+            return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+        }
+        function setRing(r) {
+            const offset = total > 0 ? CIRC * (1 - r / total) : 0;
+            document.getElementById('timerArc').style.strokeDashoffset = offset;
+        }
+        function refreshDisplay() {
+            document.getElementById('timerDisplay').textContent = fmtTime(remaining);
+            setRing(remaining);
+        }
 
         function startTimer() {
-            if (timerInterval) return; // already running
-            if (remainingTime === 0) {
-                const mins = parseInt(document.getElementById('timerInput').value, 10);
-                if (!mins || mins <= 0) return;
-                remainingTime = mins * 60;
+            if (timerInterval) return;
+            document.getElementById('timerDone').style.display = 'none';
+            document.getElementById('timerArc').classList.remove('done');
+            if (remaining === 0) {
+                const m = parseInt(document.getElementById('timerInput').value, 10);
+                if (!m || m <= 0) return;
+                total = remaining = m * 60;
             }
-            const display = document.getElementById('timerDisplay');
-            display.className = 'timer-display';
+            document.getElementById('timerSub').textContent = 'brewing';
+            refreshDisplay();
             timerInterval = setInterval(() => {
-                if (remainingTime <= 0) {
+                remaining--;
+                refreshDisplay();
+                if (remaining <= 0) {
                     clearInterval(timerInterval);
                     timerInterval = null;
-                    remainingTime = 0;
-                    display.textContent = "Time's up! ☕";
-                    display.className = 'timer-display done';
-                    return;
+                    document.getElementById('timerArc').classList.add('done');
+                    document.getElementById('timerSub').textContent = 'done!';
+                    document.getElementById('timerDone').style.display = 'block';
                 }
-                const m = Math.floor(remainingTime / 60);
-                const s = String(remainingTime % 60).padStart(2, '0');
-                display.textContent = `${m}:${s}`;
-                remainingTime--;
             }, 1000);
         }
 
         function stopTimer() {
             clearInterval(timerInterval);
             timerInterval = null;
+            document.getElementById('timerSub').textContent = 'paused';
         }
 
         function resetTimer() {
             stopTimer();
-            remainingTime = 0;
-            const display = document.getElementById('timerDisplay');
-            display.textContent = '';
-            display.className = 'timer-display';
+            remaining = total = 0;
+            const m = parseInt(document.getElementById('timerInput').value, 10) || 4;
+            document.getElementById('timerDisplay').textContent = fmtTime(m * 60);
+            document.getElementById('timerSub').textContent = 'ready';
+            document.getElementById('timerDone').style.display = 'none';
+            document.getElementById('timerArc').classList.remove('done');
+            document.getElementById('timerArc').style.strokeDashoffset = 0;
         }
 
-        // ── Event listeners ────────────────────────────────────
+        document.getElementById('timerInput').addEventListener('change', () => {
+            if (!timerInterval && remaining === 0) {
+                const m = parseInt(document.getElementById('timerInput').value, 10) || 4;
+                document.getElementById('timerDisplay').textContent = fmtTime(m * 60);
+            }
+        });
+
+        /* ── Share ─────────────────────────────────────────────── */
+        async function shareApp() {
+            const url  = location.href;
+            const data = { title: 'French Press Coffee Calculator', url };
+            if (navigator.share) {
+                try { await navigator.share(data); return; } catch {}
+            }
+            try {
+                await navigator.clipboard.writeText(url);
+                showToast('Link copied to clipboard!');
+            } catch {
+                showToast('Copy the URL from your address bar');
+            }
+        }
+
+        /* ── Toast ─────────────────────────────────────────────── */
+        let toastTimer;
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+        }
+
+        /* ── Init ──────────────────────────────────────────────── */
         document.getElementById('ratio').addEventListener('input', function () {
             updateRatio(this.value);
         });
-
-        document.getElementById('waterAmount').addEventListener('input', calculateCoffee);
-
-        // Init ratio display
+        document.getElementById('waterAmount').addEventListener('input', () => {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            calculateCoffee();
+        });
         updateRatio(document.getElementById('ratio').value);
     </script>
 </body>

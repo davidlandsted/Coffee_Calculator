@@ -1,0 +1,17 @@
+{
+  "name": "French Press Coffee Calculator",
+  "short_name": "Coffee Calc",
+  "description": "Calculate the perfect coffee-to-water ratio for your French press brew.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#2C1205",
+  "theme_color": "#2C1205",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
